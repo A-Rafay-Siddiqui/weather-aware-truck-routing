@@ -76,7 +76,23 @@ class TomTomRouting:
     def __init__(self, client: TomTomClient):
         self.client = client
 
+    CACHE_SECONDS = 10 * 60
+
     def routes(self, origin: Place, destination: Place, depart_at: datetime, load_lbs: float) -> list[RouteOption]:
+        # Computing alternatives takes TomTom ~4 s on long trips. Identical requests within the
+        # same departure hour reuse the result (repeat plans, toggling the interval or weather source).
+        key = (
+            f"tt:routes:v1:{origin.lat:.4f},{origin.lon:.4f}:{destination.lat:.4f},{destination.lon:.4f}:"
+            f"{round(load_lbs, -3):.0f}:{_depart_at_param(depart_at)[:13]}"
+        )
+        cached = cache.get(key)
+        if cached is not None:
+            return cached
+        options = self._routes(origin, destination, depart_at, load_lbs)
+        cache.set(key, options, self.CACHE_SECONDS)
+        return options
+
+    def _routes(self, origin: Place, destination: Place, depart_at: datetime, load_lbs: float) -> list[RouteOption]:
         primary = self._calculate(origin, destination, depart_at, load_lbs, [("maxAlternatives", TARGET_ROUTES - 1)])
         if not primary:
             raise NoRouteFound()

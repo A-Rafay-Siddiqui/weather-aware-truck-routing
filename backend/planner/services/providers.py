@@ -18,7 +18,11 @@ def geocoder() -> TomTomGeocoder:
 
 
 def live_weather() -> OpenMeteoWeather:
-    return OpenMeteoWeather(base_url=settings.OPEN_METEO_URL, api_key=settings.OPEN_METEO_API_KEY)
+    return OpenMeteoWeather(
+        base_url=settings.OPEN_METEO_URL,
+        api_key=settings.OPEN_METEO_API_KEY,
+        per_minute=settings.OPEN_METEO_PER_MINUTE,
+    )
 
 
 def weather_for_plan(result: dict):

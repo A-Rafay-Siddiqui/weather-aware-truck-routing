@@ -21,7 +21,7 @@ from ..providers.base import WeatherProvider
 HOURS = 48
 MAX_CELLS = 320
 CORRIDOR_MILES = 45
-CELL_SIZES_DEG = (0.1, 0.125, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5, 0.6, 0.75, 1.0, 1.25, 1.5)
+CELL_SIZES_DEG = (0.1, 0.125, 0.15, 0.2, 0.25, 0.3, 0.35, 0.4, 0.45, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0, 1.25, 1.5)
 
 
 def merc_y(lat: float) -> float:

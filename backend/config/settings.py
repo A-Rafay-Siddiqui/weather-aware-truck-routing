@@ -123,3 +123,5 @@ LOGGING = {
 TOMTOM_API_KEY = os.environ.get("TOMTOM_API_KEY", "")
 OPEN_METEO_URL = os.environ.get("OPEN_METEO_URL", "https://api.open-meteo.com/v1/forecast")
 OPEN_METEO_API_KEY = os.environ.get("OPEN_METEO_API_KEY", "")
+# Free tier: 600 location-calls/minute. Keep headroom for other clients sharing the egress IP.
+OPEN_METEO_PER_MINUTE = int(os.environ.get("OPEN_METEO_PER_MINUTE", "560"))

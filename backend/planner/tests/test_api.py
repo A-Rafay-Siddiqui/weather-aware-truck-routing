@@ -1,7 +1,6 @@
 from datetime import timedelta
 
 import pytest
-from django.core.cache import cache
 from django.utils import timezone
 from rest_framework.test import APIClient
 
@@ -16,7 +15,6 @@ pytestmark = pytest.mark.django_db
 
 @pytest.fixture(autouse=True)
 def fake_providers(monkeypatch):
-    cache.clear()  # throttles live in the cache
     monkeypatch.setattr(providers, "routing_provider", FakeRouting)
     monkeypatch.setattr(providers, "live_weather", CalmWeather)
 
