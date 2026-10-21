@@ -1,0 +1,11 @@
+# Assessment brief and local credentials (never committed)
+*.pdf
+creds.txt
+LOOM_NOTES.md
+
+.env
+.env.*
+!.env.example
+.DS_Store
+.idea/
+.vscode/
