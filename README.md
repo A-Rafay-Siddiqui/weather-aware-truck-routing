@@ -2,7 +2,7 @@
 
 A React + Django app that helps a truck driver pick the safest of three routes. It weighs forecast weather at the time the truck reaches each point, the load weight, and travel time.
 
-**Live app:** _TBD_ · **API:** _TBD_ · **Walkthrough (Loom):** _TBD_
+**Live app:** https://weather-aware-truck-routing-fronten.vercel.app · **API:** https://weather-routing-api-5rww.onrender.com/api/v1/health/ · **Walkthrough (Loom):** _TBD_
 
 ![Memphis → Nashville with a simulated storm: the recommended route avoids the No Travel core on I-40](docs/screenshot.png)
 
@@ -47,7 +47,7 @@ All rules are **pure Python** in `backend/planner/domain/` (no I/O), with exhaus
 | Load rules | Only ever **raise** the wind level; the >30,000 lb / >40,000 lb thresholds are strict | Matches "> N lb". 35–44 mph + 40,001 lb → Severe; 45–54 mph + 30,001 lb → No Travel. |
 | "Severe miles" | Each checkpoint represents the road **halfway to its neighbours**; the segments tile the route exactly | Miles add up to the route length at every interval. |
 | No Travel in the ranking | Compared **before** Severe miles | Otherwise 5 No Travel miles would beat 6 Severe miles. |
-| "Lowest average risk" | Mile-weighted score (Low 0 … No Travel 4), compared at **0.1 resolution** | Exact floats almost never tie, so travel time would never matter and the app would add hours of driving to dodge a few Moderate miles. The rounding is how the brief's "balance weather risk and travel time" is met. |
+| "Lowest average risk" | Mile-weighted score (Low 0 … No Travel 4). Routes **within 0.1 of the lowest average** count as tied with it | Exact floats almost never tie, so travel time would never matter and the app would add hours of driving to dodge a few Moderate miles. The 0.1-wide bands are measured from the best route rather than rounded, so 0.33 vs 0.36 is a tie instead of straddling a 0.35 boundary. This is how the brief's "balance weather risk and travel time" is met. |
 | Which wind | Sustained 10 m wind (gusts shown for context) | The table says wind speed; gusts would double-count. |
 | Rain rate | Open-Meteo `rain + showers` (in/hr) | Convective showers are rain too. |
 | Time alignment | Wind interpolated between hours; precipitation taken from the hour window that contains the ETA | Open-Meteo precip is the total of the *preceding* hour. |
@@ -147,7 +147,7 @@ cd frontend && npm test && npm run lint && npm run build
 
 - **API: Render.** `render.yaml` provisions the web service, Postgres and Key Value (Redis). Set `TOMTOM_API_KEY` and `CORS_ALLOWED_ORIGINS` in the dashboard.
 - **Web: Vercel.** Set the root directory to `frontend` and set `VITE_API_BASE_URL=https://<api>.onrender.com`. `VITE_MAPBOX_TOKEN` is optional.
-- Render's free tier sleeps when idle. The UI shows a "waking up the server" notice if the first request is slow.
+- Render's free tier sleeps when idle. The UI shows a "waking up the server" notice if the first request is slow (about 30 s).
 - The Dockerfile is production-ready, so the same image deploys to **GCP Cloud Run** with Cloud SQL and Memorystore unchanged. Only the env vars differ.
 
 ## Limitations and next steps
