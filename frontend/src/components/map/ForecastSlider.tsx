@@ -7,6 +7,7 @@ import type { Heatmap, Plan } from '../../api/types';
 import { FORECAST_HOURS, forecastStartMs, secondsAfterDeparture } from '../../lib/forecast';
 import { mileAtTime } from '../../lib/path';
 import { useForecastTime, usePlannerState } from '../../state/PlannerContext';
+import { useSlowFlag } from '../../hooks/useSlowFlag';
 
 const HOURS_PER_SECOND = 2.5; // playback speed
 
@@ -14,6 +15,7 @@ const HOURS_PER_SECOND = 2.5; // playback speed
 export function ForecastSlider({ plan, heatmap, loading }: { plan: Plan; heatmap?: Heatmap; loading: boolean }) {
   const { hour, playing, setHour, setPlaying } = useForecastTime();
   const { selectedRouteId } = usePlannerState();
+  const slow = useSlowFlag(loading, 6000);
   const hourRef = useRef(hour);
   hourRef.current = hour;
 
@@ -80,7 +82,7 @@ export function ForecastSlider({ plan, heatmap, loading }: { plan: Plan; heatmap
               {loading ? (
                 <>
                   <CircularProgress size={10} sx={{ mr: 0.75 }} />
-                  Loading weather grid…
+                  {slow ? 'Waiting for weather API quota…' : 'Loading weather grid…'}
                 </>
               ) : (
                 status

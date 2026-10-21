@@ -25,6 +25,7 @@ import { useFormik } from 'formik';
 import { useMemo } from 'react';
 import * as Yup from 'yup';
 import type { Place, PlanInput, SampleInterval, WeatherSource } from '../api/types';
+import { useSlowFlag } from '../hooks/useSlowFlag';
 import { localTzName } from '../lib/format';
 import { PlaceAutocomplete } from './PlaceAutocomplete';
 
@@ -130,6 +131,7 @@ export function TripForm({ submitting, onSubmit, initial }: Props) {
       }),
   });
   const { values, errors, touched, setFieldValue, setFieldTouched } = formik;
+  const slow = useSlowFlag(submitting, 9000);
   const err = (f: keyof Values) => (touched[f] && typeof errors[f] === 'string' ? (errors[f] as string) : undefined);
 
   return (
@@ -282,7 +284,11 @@ export function TripForm({ submitting, onSubmit, initial }: Props) {
           disabled={submitting}
           startIcon={submitting ? <CircularProgress size={18} color="inherit" /> : <RouteIcon />}
         >
-          {submitting ? 'Checking routes & forecasts…' : 'Find safest route'}
+          {!submitting
+            ? 'Find safest route'
+            : slow
+              ? 'Waiting for the free weather API quota…'
+              : 'Checking routes & forecasts…'}
         </Button>
       </Stack>
     </Box>
