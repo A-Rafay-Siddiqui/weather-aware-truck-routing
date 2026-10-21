@@ -1,0 +1,33 @@
+html, body, #root { height: 100%; }
+body { overscroll-behavior: none; }
+
+/* Map overlays (markers are plain DOM elements positioned by the GL library) */
+.truck-marker {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: grid; place-items: center;
+  color: #fff; border: 2px solid #fff;
+  box-shadow: 0 2px 6px rgba(0,0,0,.35);
+  transition: opacity .2s;
+}
+.truck-marker svg { width: 18px; height: 18px; }
+.route-label {
+  font: 600 12px/1 Roboto, sans-serif;
+  padding: 5px 8px; border-radius: 6px;
+  background: #fff; color: #043344;
+  box-shadow: 0 1px 4px rgba(0,0,0,.3);
+  white-space: nowrap; cursor: pointer;
+  border: 2px solid transparent;
+}
+.route-label.selected { background: #043344; color: #fff; }
+.route-label .star { color: #f5b301; margin-right: 3px; }
+.endpoint-marker {
+  width: 16px; height: 16px; border-radius: 50%;
+  border: 3px solid #fff; box-shadow: 0 1px 4px rgba(0,0,0,.4);
+}
+.stop-marker {
+  font: 700 10px/1 Roboto, sans-serif; color: #fff; background: #455a64;
+  border: 2px solid #fff; border-radius: 4px; padding: 3px 4px;
+  box-shadow: 0 1px 3px rgba(0,0,0,.35);
+}
+.maplibregl-popup-content, .mapboxgl-popup-content { padding: 0 !important; border-radius: 8px !important; background: transparent !important; box-shadow: none !important; }
+.maplibregl-popup-tip, .mapboxgl-popup-tip { display: none; }
