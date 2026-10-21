@@ -74,6 +74,8 @@ export function valuesFor(heatmap: Heatmap, layer: HeatmapLayer): number[][] {
 }
 
 const UPSCALE = 8;
+/** Transparent cells added on every side so the blur can fade out instead of being clipped at the image edge. */
+const PAD = 2;
 
 /**
  * One bitmap per forecast hour, encoded as a data URL.
@@ -84,7 +86,8 @@ const UPSCALE = 8;
  * takes a few tens of milliseconds. After that, scrubbing only swaps which image is visible.
  */
 export function renderFrames(heatmap: Heatmap, layer: HeatmapLayer): string[] {
-  const { cols, rows } = heatmap;
+  const cols = heatmap.cols + 2 * PAD;
+  const rows = heatmap.rows + 2 * PAD;
   const small = document.createElement('canvas');
   small.width = cols;
   small.height = rows;
@@ -104,7 +107,7 @@ export function renderFrames(heatmap: Heatmap, layer: HeatmapLayer): string[] {
     const image = sctx.createImageData(cols, rows);
     heatmap.cells.forEach(([x, y], i) => {
       const [r, g, b, a] = colorFor(layer, values[i][h]);
-      const o = (y * cols + x) * 4;
+      const o = ((y + PAD) * cols + (x + PAD)) * 4;
       image.data[o] = r;
       image.data[o + 1] = g;
       image.data[o + 2] = b;
@@ -119,6 +122,22 @@ export function renderFrames(heatmap: Heatmap, layer: HeatmapLayer): string[] {
 }
 
 const mercY = (lat: number) => (180 / Math.PI) * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360));
+const invMercY = (y: number) => (360 / Math.PI) * Math.atan(Math.exp((y * Math.PI) / 180)) - 90;
+
+/** Image corners (NW, NE, SE, SW) for `renderFrames` output, including its padding. */
+export function frameCorners(h: Heatmap): [[number, number], [number, number], [number, number], [number, number]] {
+  const pad = PAD * h.cell_deg;
+  const west = h.west - pad;
+  const east = h.east + pad;
+  const north = invMercY(mercY(h.north) + pad);
+  const south = invMercY(mercY(h.south) - pad);
+  return [
+    [west, north],
+    [east, north],
+    [east, south],
+    [west, south],
+  ];
+}
 
 /** Index into the heatmap's cell arrays for a map position, or -1 outside the corridor. */
 export function cellIndexAt(heatmap: Heatmap, lon: number, lat: number, lookup: Map<number, number>): number {

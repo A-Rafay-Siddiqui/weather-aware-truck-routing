@@ -90,7 +90,7 @@ export function RiskRulesDialog({ open, onClose }: { open: boolean; onClose: () 
               <Typography variant="subtitle2">Best route</Typography>
               <Typography variant="body2">
                 Routes are ranked by fewest No Travel miles, then Severe miles, then High miles, then lowest mile-weighted
-                average risk (Low 0 … No Travel 4, compared to 0.1), then shortest travel time. No Travel ranks before
+                average risk (Low 0 … No Travel 4; routes within 0.1 of the lowest average count as tied), then shortest travel time. No Travel ranks before
                 Severe because it is the stricter condition.
               </Typography>
             </Stack>

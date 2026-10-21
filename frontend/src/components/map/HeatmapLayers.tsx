@@ -1,7 +1,7 @@
 import { memo, useMemo } from 'react';
 import { Layer, Source } from 'map-engine';
 import type { Heatmap } from '../../api/types';
-import { renderFrames, type HeatmapLayer } from '../../lib/heatmapFrames';
+import { frameCorners, renderFrames, type HeatmapLayer } from '../../lib/heatmapFrames';
 
 export const ROUTES_ANCHOR_LAYER = 'anchor-routes';
 const OPACITY = 0.85;
@@ -22,15 +22,7 @@ interface Props {
  */
 export const HeatmapLayers = memo(function HeatmapLayers({ heatmap, layer, frame, visible }: Props) {
   const frames = useMemo(() => renderFrames(heatmap, layer), [heatmap, layer]);
-  const coordinates = useMemo<[[number, number], [number, number], [number, number], [number, number]]>(
-    () => [
-      [heatmap.west, heatmap.north],
-      [heatmap.east, heatmap.north],
-      [heatmap.east, heatmap.south],
-      [heatmap.west, heatmap.south],
-    ],
-    [heatmap],
-  );
+  const coordinates = useMemo(() => frameCorners(heatmap), [heatmap]);
 
   return (
     <>
