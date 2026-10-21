@@ -1,0 +1,44 @@
+# Render Blueprint: Django API + Postgres + Key Value (Redis) on the free tier.
+# Deploy: Render dashboard → New → Blueprint → pick this repo. Then set the two `sync: false` vars.
+services:
+  - type: web
+    name: weather-routing-api
+    runtime: python
+    rootDir: backend
+    plan: free
+    buildCommand: pip install -r requirements.txt && python manage.py collectstatic --noinput
+    # Free instances have no pre-deploy hook, so migrations run at boot (idempotent).
+    startCommand: python manage.py migrate --noinput && gunicorn config.wsgi --bind 0.0.0.0:$PORT --workers 2 --threads 8 --timeout 90
+    healthCheckPath: /api/v1/health/
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: DJANGO_SECRET_KEY
+        generateValue: true
+      - key: DJANGO_ALLOWED_HOSTS
+        value: .onrender.com
+      - key: TOMTOM_API_KEY
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS # e.g. https://weather-routing.vercel.app
+        sync: false
+      - key: CORS_ALLOWED_ORIGIN_REGEXES # Vercel preview deployments
+        value: ^https://weather-routing[a-z0-9-]*\.vercel\.app$
+      - key: DATABASE_URL
+        fromDatabase:
+          name: weather-routing-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: weather-routing-cache
+          property: connectionString
+
+  - type: keyvalue
+    name: weather-routing-cache
+    plan: free
+    maxmemoryPolicy: allkeys-lru
+    ipAllowList: [] # internal connections only
+
+databases:
+  - name: weather-routing-db
+    plan: free
