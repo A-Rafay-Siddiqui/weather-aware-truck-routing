@@ -4,6 +4,8 @@ A React + Django app that helps a truck driver pick the safest of three routes. 
 
 **Live app:** _TBD_ · **API:** _TBD_ · **Walkthrough (Loom):** _TBD_
 
+![Memphis → Nashville with a simulated storm: the recommended route avoids the No Travel core on I-40](docs/screenshot.png)
+
 ---
 
 ## What it does
@@ -63,7 +65,9 @@ The heatmap is designed so the **slider never touches the network**:
 - **Less to draw.** Route geometry is simplified server-side to ≤1,500 vertices.
 - **Smaller bundle.** The Data Grid, Charts and the rules dialog are lazy-loaded, and the GL engine is its own cached chunk.
 - **Fewer re-renders.** UI state is split so the 60 fps forecast clock re-renders only the map overlays, not the side panel.
-- **Caching.** Weather is cached per location and window in Redis (or LocMem locally), and nearby coordinates are rounded to 0.01° so they share cache hits. Geocoding is cached for 24 h.
+- **Weather caching.** Forecast points snap to a 0.05° lattice, which is finer than the 3 km HRRR model. Each point is cached with a fixed forecast window starting at the current hour, so any plan at any departure time reuses it, and overlapping routes and repeat trips share points.
+- **Route and geocode caching.** TomTom alternatives take about 4 s to compute on long trips, so identical route requests within the same departure hour are cached for 10 minutes; a repeat plan then takes under 1 s. Geocoding is cached for 24 h.
+- **Rate-limit budget.** Open-Meteo's free tier allows 600 calls per minute and counts *every location* as a call. A per-minute budget shared across workers (kept in Redis) holds requests until the next minute instead of failing, and a 429 is retried once. The UI explains the wait if one happens.
 
 ## Stack (and why)
 
@@ -135,7 +139,7 @@ cd backend  && pytest && ruff check . && ruff format --check .
 cd frontend && npm test && npm run lint && npm run build
 ```
 
-- **Backend: 102 tests.** These cover every threshold boundary and load rule, checkpoint tiling at 10/25/50 mi, HOS wall-clock math, forecast time alignment, each ranking criterion, TomTom request parameters and response parsing (including the fallback strategies used when TomTom returns fewer than 3 alternatives), Open-Meteo batching and caching, the simulated storm rerouting the recommendation, the heatmap grid budget, and the API (validation, error mapping, heatmap caching).
+- **Backend: 108 tests.** These cover every threshold boundary and load rule, checkpoint tiling at 10/25/50 mi, HOS wall-clock math, forecast time alignment, each ranking criterion, TomTom request parameters and response parsing (including the fallback strategies used when TomTom returns fewer than 3 alternatives), Open-Meteo batching, caching, rate budget and 429 retry, route caching, the simulated storm rerouting the recommendation, the heatmap grid budget, and the API (validation, error mapping, heatmap caching).
 - **Frontend:** unit tests for time and mile interpolation along the path, and for the color scales.
 - **CI:** GitHub Actions runs everything above on every push.
 
