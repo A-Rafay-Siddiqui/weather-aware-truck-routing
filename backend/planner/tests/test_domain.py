@@ -177,6 +177,13 @@ class TestRanking:
         assert rank_routes([a, b])[0].route_id == "A"
         assert deciding_criterion(a, b).key == "travel_time"
 
+    def test_near_equal_averages_tie_instead_of_straddling_a_rounding_boundary(self):
+        # 0.33 vs 0.36 would round to different 0.1 buckets; measured from the best they tie.
+        a = summary("A", travel_h=11, low=670, moderate=330)  # avg 0.33
+        b = summary("B", travel_h=10, low=640, moderate=360)  # avg 0.36, faster
+        assert rank_routes([a, b])[0].route_id == "B"
+        assert deciding_criterion(b, a).key == "travel_time"
+
     def test_no_travel_is_worse_than_any_severe(self):
         a = summary("A", low=400, no_travel=5)
         b = summary("B", low=300, severe=100)

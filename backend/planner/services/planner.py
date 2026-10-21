@@ -21,7 +21,7 @@ from ..domain.geometry import (
     sample_checkpoints,
     simplify_indices,
 )
-from ..domain.ranking import RouteRiskSummary, deciding_criterion, rank_routes
+from ..domain.ranking import RouteRiskSummary, average_anchor, deciding_criterion, rank_routes
 from ..domain.risk import RiskAssessment, RiskLevel, assess
 from ..domain.timing import HosPolicy, NoStops, RouteTiming, Stop
 from ..providers.base import Place, RouteOption, RoutingProvider, WeatherProvider
@@ -319,8 +319,9 @@ def _display_path(route: PreparedRoute) -> list[list[float]]:
 def _explain(best: RouteRiskSummary, others: list[RouteRiskSummary], routes: dict[str, PreparedRoute]) -> dict:
     winner = routes[best.route_id]
     reasons = []
+    anchor = average_anchor([best, *others])
     for other in others:
-        criterion = deciding_criterion(best, other)
+        criterion = deciding_criterion(best, other, anchor)
         label = f"Route {other.route_id} ({routes[other.route_id].name})"
         if criterion is None:
             reasons.append(f"Ties with {label} on every criterion; kept the faster-listed option.")
